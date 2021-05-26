@@ -1,0 +1,30 @@
+type Token @entity {
+  id: ID!
+  name: String!
+  symbol: String!
+  decimals: Int!
+  balances: [TokenBalance!]! @derivedFrom(field: "token")
+  approvals: [TokenApproval!]! @derivedFrom(field: "token")
+}
+
+type Account @entity {
+  id: ID!
+  balances: [TokenBalance!]! @derivedFrom(field: "account")
+  incomingApprovals: [TokenApproval!]! @derivedFrom(field: "spenderAccount")
+  outgoingApprovals: [TokenApproval!]! @derivedFrom(field: "ownerAccount")
+}
+
+type TokenBalance @entity {
+  id: ID!
+  token: Token!
+  account: Account!
+  value: BigDecimal!
+}
+
+type TokenApproval @entity {
+  id: ID!
+  token: Token!
+  ownerAccount: Account!
+  spenderAccount: Account!
+  value: BigDecimal!
+}
