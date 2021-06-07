@@ -37,10 +37,17 @@ function loadOrCreateToken(event: ethereum.Event): Token | null {
       return null;
     }
 
+    // Ignore any weird tokens to avoid overflowing the `decimals` field (which is an i32)
+    // On mainnet for example there is at least one token which has a huge value for `decimals`
+    // and that would overflow the Token entity's i32 field for the decimals
+    if (decimalsResult.value.toBigDecimal().gt(BigDecimal.fromString("255"))) {
+      return null;
+    }
+
     token = new Token(event.address.toHex());
     token.name = nameResult.value;
     token.symbol = symbolResult.value;
-    token.decimals = decimalsResult.value;
+    token.decimals = decimalsResult.value.toI32();
     token.save();
   }
   return token;
