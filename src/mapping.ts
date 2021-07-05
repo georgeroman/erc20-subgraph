@@ -8,6 +8,8 @@ import {
   TokenBalance,
 } from "../generated/schema";
 
+const zeroAddress = '0x0000000000000000000000000000000000000000';
+
 function loadOrCreateAccount(address: string): Account | null {
   let account = Account.load(address);
   if (!account) {
@@ -102,15 +104,17 @@ export function handleTransfer(event: Transfer): void {
     return;
   }
 
-  let fromTokenBalance = TokenBalance.load(token.id + "-" + fromAccount.id);
-  if (!fromTokenBalance) {
-    fromTokenBalance = new TokenBalance(token.id + "-" + fromAccount.id);
-    fromTokenBalance.token = token.id;
-    fromTokenBalance.account = fromAccount.id;
-    fromTokenBalance.value = BigDecimal.fromString("0");
+  if (fromAccount.id != zeroAddress) {
+    let fromTokenBalance = TokenBalance.load(token.id + "-" + fromAccount.id);
+    if (!fromTokenBalance) {
+      fromTokenBalance = new TokenBalance(token.id + "-" + fromAccount.id);
+      fromTokenBalance.token = token.id;
+      fromTokenBalance.account = fromAccount.id;
+      fromTokenBalance.value = BigDecimal.fromString("0");
+    }
+    fromTokenBalance.value = fromTokenBalance.value.minus(value);
+    fromTokenBalance.save();
   }
-  fromTokenBalance.value = fromTokenBalance.value.minus(value);
-  fromTokenBalance.save();
 
   let toTokenBalance = TokenBalance.load(token.id + "-" + toAccount.id);
   if (!toTokenBalance) {
